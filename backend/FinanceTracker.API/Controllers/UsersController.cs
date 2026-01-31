@@ -21,15 +21,44 @@ public class UsersController : ControllerBase
     /// Get all users (Admin only)
     /// </summary>
     [HttpGet]
-    public async Task<ActionResult<ApiResponse<List<UserDto>>>> GetUsers()
+    public async Task<ActionResult<ApiResponse<PaginatedResponse<UserDto>>>> GetUsers(
+        [FromQuery] int page = 1, 
+        [FromQuery] int pageSize = 10,
+        [FromQuery] string? search = null)
     {
-        var users = await _userService.GetAllAsync();
+        var allUsers = await _userService.GetAllAsync();
 
-        return Ok(new ApiResponse<List<UserDto>>
+        // Filter by search query
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            allUsers = allUsers.Where(u => 
+                u.Username.Contains(search, StringComparison.OrdinalIgnoreCase) ||
+                u.Email.Contains(search, StringComparison.OrdinalIgnoreCase) ||
+                u.FirstName.Contains(search, StringComparison.OrdinalIgnoreCase) ||
+                u.LastName.Contains(search, StringComparison.OrdinalIgnoreCase)
+            ).ToList();
+        }
+
+        var totalCount = allUsers.Count;
+        var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
+        var items = allUsers.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+
+        var response = new PaginatedResponse<UserDto>
+        {
+            Items = items,
+            TotalCount = totalCount,
+            Page = page,
+            PageSize = pageSize,
+            TotalPages = totalPages,
+            HasNextPage = page < totalPages,
+            HasPreviousPage = page > 1
+        };
+
+        return Ok(new ApiResponse<PaginatedResponse<UserDto>>
         {
             Success = true,
             Message = "Users retrieved successfully",
-            Data = users
+            Data = response
         });
     }
 
