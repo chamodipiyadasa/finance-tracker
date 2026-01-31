@@ -573,7 +573,7 @@ export default function SavingsPage() {
                           'w-8 h-8 rounded-full transition-transform',
                           goalColor === color && 'ring-2 ring-offset-2 ring-offset-dark-900 scale-110'
                         )}
-                        style={{ backgroundColor: color, ringColor: color }}
+                        style={{ backgroundColor: color }}
                       />
                     ))}
                   </div>
