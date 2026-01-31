@@ -48,6 +48,19 @@ public interface ICategoryService
     Task<bool> DeleteAsync(string id);
 }
 
+public interface ISavingsService
+{
+    Task<SavingsGoalDto?> GetGoalByIdAsync(string id, string userId);
+    Task<List<SavingsGoalDto>> GetGoalsByUserIdAsync(string userId);
+    Task<SavingsGoalDto> CreateGoalAsync(string userId, CreateSavingsGoalRequest request);
+    Task<SavingsGoalDto?> UpdateGoalAsync(string id, string userId, UpdateSavingsGoalRequest request);
+    Task<bool> DeleteGoalAsync(string id, string userId);
+    Task<SavingsTransactionDto?> AddTransactionAsync(string goalId, string userId, AddSavingsTransactionRequest request);
+    Task<List<SavingsTransactionDto>> GetTransactionsByGoalIdAsync(string goalId, string userId);
+    Task<List<SavingsTransactionDto>> GetRecentTransactionsAsync(string userId, int limit = 20);
+    Task<SavingsSummaryDto> GetSummaryAsync(string userId);
+}
+
 public interface IBudgetService
 {
     Task<BudgetDto?> GetByIdAsync(string id, string userId);

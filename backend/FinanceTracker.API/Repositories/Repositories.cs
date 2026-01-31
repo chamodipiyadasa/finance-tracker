@@ -53,6 +53,26 @@ public interface IBudgetRepository
     Task<bool> DeleteAsync(string id);
 }
 
+public interface ISavingsGoalRepository
+{
+    Task<SavingsGoal?> GetByIdAsync(string id);
+    Task<List<SavingsGoal>> GetByUserIdAsync(string userId);
+    Task<List<SavingsGoal>> GetActiveByUserIdAsync(string userId);
+    Task<SavingsGoal> CreateAsync(SavingsGoal goal);
+    Task<SavingsGoal?> UpdateAsync(string id, SavingsGoal goal);
+    Task<bool> DeleteAsync(string id);
+}
+
+public interface ISavingsTransactionRepository
+{
+    Task<SavingsTransaction?> GetByIdAsync(string id);
+    Task<List<SavingsTransaction>> GetByGoalIdAsync(string goalId);
+    Task<List<SavingsTransaction>> GetByUserIdAsync(string userId, int limit = 50);
+    Task<SavingsTransaction> CreateAsync(SavingsTransaction transaction);
+    Task<bool> DeleteAsync(string id);
+    Task<decimal> GetTotalByGoalIdAsync(string goalId, string type);
+}
+
 #endregion
 
 #region Implementations
@@ -304,6 +324,108 @@ public class BudgetRepository : IBudgetRepository
     {
         var result = await _context.Budgets.DeleteOneAsync(b => b.Id == id);
         return result.DeletedCount > 0;
+    }
+}
+
+public class SavingsGoalRepository : ISavingsGoalRepository
+{
+    private readonly MongoDbContext _context;
+
+    public SavingsGoalRepository(MongoDbContext context)
+    {
+        _context = context;
+    }
+
+    public async Task<SavingsGoal?> GetByIdAsync(string id)
+    {
+        return await _context.SavingsGoals.Find(s => s.Id == id).FirstOrDefaultAsync();
+    }
+
+    public async Task<List<SavingsGoal>> GetByUserIdAsync(string userId)
+    {
+        return await _context.SavingsGoals
+            .Find(s => s.UserId == userId)
+            .SortByDescending(s => s.CreatedAt)
+            .ToListAsync();
+    }
+
+    public async Task<List<SavingsGoal>> GetActiveByUserIdAsync(string userId)
+    {
+        return await _context.SavingsGoals
+            .Find(s => s.UserId == userId && !s.IsCompleted)
+            .SortByDescending(s => s.CreatedAt)
+            .ToListAsync();
+    }
+
+    public async Task<SavingsGoal> CreateAsync(SavingsGoal goal)
+    {
+        await _context.SavingsGoals.InsertOneAsync(goal);
+        return goal;
+    }
+
+    public async Task<SavingsGoal?> UpdateAsync(string id, SavingsGoal goal)
+    {
+        goal.UpdatedAt = DateTime.UtcNow;
+        var result = await _context.SavingsGoals.ReplaceOneAsync(s => s.Id == id, goal);
+        return result.IsAcknowledged ? goal : null;
+    }
+
+    public async Task<bool> DeleteAsync(string id)
+    {
+        var result = await _context.SavingsGoals.DeleteOneAsync(s => s.Id == id);
+        return result.DeletedCount > 0;
+    }
+}
+
+public class SavingsTransactionRepository : ISavingsTransactionRepository
+{
+    private readonly MongoDbContext _context;
+
+    public SavingsTransactionRepository(MongoDbContext context)
+    {
+        _context = context;
+    }
+
+    public async Task<SavingsTransaction?> GetByIdAsync(string id)
+    {
+        return await _context.SavingsTransactions.Find(t => t.Id == id).FirstOrDefaultAsync();
+    }
+
+    public async Task<List<SavingsTransaction>> GetByGoalIdAsync(string goalId)
+    {
+        return await _context.SavingsTransactions
+            .Find(t => t.SavingsGoalId == goalId)
+            .SortByDescending(t => t.CreatedAt)
+            .ToListAsync();
+    }
+
+    public async Task<List<SavingsTransaction>> GetByUserIdAsync(string userId, int limit = 50)
+    {
+        return await _context.SavingsTransactions
+            .Find(t => t.UserId == userId)
+            .SortByDescending(t => t.CreatedAt)
+            .Limit(limit)
+            .ToListAsync();
+    }
+
+    public async Task<SavingsTransaction> CreateAsync(SavingsTransaction transaction)
+    {
+        await _context.SavingsTransactions.InsertOneAsync(transaction);
+        return transaction;
+    }
+
+    public async Task<bool> DeleteAsync(string id)
+    {
+        var result = await _context.SavingsTransactions.DeleteOneAsync(t => t.Id == id);
+        return result.DeletedCount > 0;
+    }
+
+    public async Task<decimal> GetTotalByGoalIdAsync(string goalId, string type)
+    {
+        var transactions = await _context.SavingsTransactions
+            .Find(t => t.SavingsGoalId == goalId && t.Type == type)
+            .ToListAsync();
+        return transactions.Sum(t => t.Amount);
     }
 }
 
