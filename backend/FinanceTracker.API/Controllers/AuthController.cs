@@ -78,6 +78,43 @@ public class AuthController : ControllerBase
     }
 
     /// <summary>
+    /// Update current user's profile
+    /// </summary>
+    [Authorize]
+    [HttpPut("me")]
+    public async Task<ActionResult<ApiResponse<UserDto>>> UpdateCurrentUser(
+        [FromServices] IUserService userService,
+        [FromBody] UpdateUserRequest request)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null)
+        {
+            return Unauthorized(new ApiResponse<UserDto>
+            {
+                Success = false,
+                Message = "User not authenticated"
+            });
+        }
+
+        var user = await userService.UpdateAsync(userId, request);
+        if (user == null)
+        {
+            return NotFound(new ApiResponse<UserDto>
+            {
+                Success = false,
+                Message = "User not found"
+            });
+        }
+
+        return Ok(new ApiResponse<UserDto>
+        {
+            Success = true,
+            Message = "Profile updated successfully",
+            Data = user
+        });
+    }
+
+    /// <summary>
     /// Change current user's password
     /// </summary>
     [Authorize]
