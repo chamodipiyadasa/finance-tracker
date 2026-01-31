@@ -27,22 +27,16 @@ const iconOptions = [
 ];
 
 const colorOptions = [
-  '#EF4444', // Red
-  '#F97316', // Orange
-  '#F59E0B', // Amber
-  '#EAB308', // Yellow
-  '#84CC16', // Lime
-  '#22C55E', // Green
-  '#10B981', // Emerald
-  '#14B8A6', // Teal
-  '#06B6D4', // Cyan
-  '#0EA5E9', // Sky
-  '#3B82F6', // Blue
-  '#6366F1', // Indigo
-  '#8B5CF6', // Violet
-  '#A855F7', // Purple
-  '#D946EF', // Fuchsia
-  '#EC4899', // Pink
+  '#e9df9e', // Cream/Pale Yellow (Base)
+  '#ddd18a', // Golden Cream
+  '#cfc070', // Warm Cream
+  '#f9cdd5', // Blush Pink (Primary)
+  '#f5a8b8', // Rose
+  '#ed7a93', // Dusty Rose
+  '#fce4e9', // Light Pink
+  '#7a8450', // Olive Green (Accent)
+  '#9caa6f', // Sage
+  '#b9c596', // Light Olive
 ];
 
 const getIconComponent = (iconName: string) => {

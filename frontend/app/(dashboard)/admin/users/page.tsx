@@ -11,8 +11,10 @@ import toast from 'react-hot-toast';
 import { api } from '@/services/api';
 import { User as UserType, CreateUserRequest } from '@/types';
 import { format } from 'date-fns';
+import { useTheme } from '@/contexts/ThemeContext';
 
 export default function AdminUsersPage() {
+  const { theme } = useTheme();
   const [users, setUsers] = useState<UserType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -23,11 +25,13 @@ export default function AdminUsersPage() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
 
   // Form state
-  const [formName, setFormName] = useState('');
+  const [formUsername, setFormUsername] = useState('');
+  const [formFirstName, setFormFirstName] = useState('');
+  const [formLastName, setFormLastName] = useState('');
   const [formEmail, setFormEmail] = useState('');
   const [formPassword, setFormPassword] = useState('');
   const [formRole, setFormRole] = useState<'Admin' | 'User'>('User');
-  const [formCurrency, setFormCurrency] = useState('₹');
+  const [formCurrency, setFormCurrency] = useState('Rs');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -55,17 +59,21 @@ export default function AdminUsersPage() {
 
   const handleOpenCreate = () => {
     setSelectedUser(null);
-    setFormName('');
+    setFormUsername('');
+    setFormFirstName('');
+    setFormLastName('');
     setFormEmail('');
     setFormPassword('');
     setFormRole('User');
-    setFormCurrency('₹');
+    setFormCurrency('Rs');
     setShowModal(true);
   };
 
   const handleOpenEdit = (user: UserType) => {
     setSelectedUser(user);
-    setFormName(user.name);
+    setFormUsername(user.username);
+    setFormFirstName(user.firstName);
+    setFormLastName(user.lastName);
     setFormEmail(user.email);
     setFormPassword('');
     setFormRole(user.role);
@@ -81,10 +89,9 @@ export default function AdminUsersPage() {
       if (selectedUser) {
         // Update user
         const response = await api.updateUser(selectedUser.id, {
-          name: formName,
           email: formEmail,
-          password: formPassword || undefined,
-          role: formRole,
+          firstName: formFirstName,
+          lastName: formLastName,
           currency: formCurrency,
         });
 
@@ -96,9 +103,11 @@ export default function AdminUsersPage() {
       } else {
         // Create user
         const response = await api.createUser({
-          name: formName,
+          username: formUsername,
           email: formEmail,
           password: formPassword,
+          firstName: formFirstName,
+          lastName: formLastName,
           role: formRole,
           currency: formCurrency,
         });
@@ -118,9 +127,7 @@ export default function AdminUsersPage() {
 
   const handleToggleActive = async (user: UserType) => {
     try {
-      const response = await api.updateUser(user.id, {
-        isActive: !user.isActive,
-      });
+      const response = await api.toggleUserStatus(user.id);
 
       if (response.success) {
         toast.success(`User ${user.isActive ? 'deactivated' : 'activated'}`);
@@ -149,8 +156,8 @@ export default function AdminUsersPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white">Users</h1>
-          <p className="text-dark-400">Manage user accounts</p>
+          <h1 className="text-2xl font-bold" style={{ color: theme === 'light' ? '#492828' : 'white' }}>Users</h1>
+          <p style={{ color: theme === 'light' ? '#656D3F' : '#6b7280' }}>Manage user accounts</p>
         </div>
         <button
           onClick={handleOpenCreate}
@@ -164,7 +171,7 @@ export default function AdminUsersPage() {
       {/* Search */}
       <div className="glass-card p-4">
         <div className="relative">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-dark-400 w-5 h-5" />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" style={{ color: theme === 'light' ? '#656D3F' : '#6b7280' }} />
           <input
             type="text"
             value={searchQuery}
@@ -188,51 +195,62 @@ export default function AdminUsersPage() {
               ))}
             </div>
           </div>
-        ) : users.length === 0 ? (
+        ) : !users || users.length === 0 ? (
           <div className="p-12 text-center">
-            <Users className="w-12 h-12 text-dark-600 mx-auto mb-4" />
-            <p className="text-dark-400">No users found</p>
+            <Users className="w-12 h-12 mx-auto mb-4" style={{ color: theme === 'light' ? '#656D3F' : '#4b5563' }} />
+            <p style={{ color: theme === 'light' ? '#656D3F' : '#6b7280' }}>No users found</p>
           </div>
         ) : (
           <>
             {/* Desktop Table */}
             <div className="hidden md:block overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-dark-800/50">
+                <thead style={{ backgroundColor: theme === 'light' ? 'rgba(132, 147, 74, 0.1)' : 'rgba(30, 30, 40, 0.5)' }}>
                   <tr>
-                    <th className="px-6 py-4 text-left text-sm font-medium text-dark-400">User</th>
-                    <th className="px-6 py-4 text-left text-sm font-medium text-dark-400">Role</th>
-                    <th className="px-6 py-4 text-left text-sm font-medium text-dark-400">Status</th>
-                    <th className="px-6 py-4 text-left text-sm font-medium text-dark-400">Joined</th>
-                    <th className="px-6 py-4 text-right text-sm font-medium text-dark-400">Actions</th>
+                    <th className="px-6 py-4 text-left text-sm font-medium" style={{ color: theme === 'light' ? '#492828' : '#6b7280' }}>User</th>
+                    <th className="px-6 py-4 text-left text-sm font-medium" style={{ color: theme === 'light' ? '#492828' : '#6b7280' }}>Role</th>
+                    <th className="px-6 py-4 text-left text-sm font-medium" style={{ color: theme === 'light' ? '#492828' : '#6b7280' }}>Status</th>
+                    <th className="px-6 py-4 text-left text-sm font-medium" style={{ color: theme === 'light' ? '#492828' : '#6b7280' }}>Joined</th>
+                    <th className="px-6 py-4 text-right text-sm font-medium" style={{ color: theme === 'light' ? '#492828' : '#6b7280' }}>Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-dark-700">
+                <tbody className="divide-y" style={{ borderColor: theme === 'light' ? '#84934A' : '#374151' }}>
                   {users.map((user) => (
-                    <tr key={user.id} className="hover:bg-dark-800/30 transition-colors">
+                    <tr key={user.id} className="transition-colors" style={{ backgroundColor: 'transparent' }}>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
-                          <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                            user.role === 'Admin' ? 'bg-primary-500/20' : 'bg-dark-700'
-                          }`}>
+                          <div 
+                            className="w-10 h-10 rounded-full flex items-center justify-center"
+                            style={{ 
+                              backgroundColor: user.role === 'Admin' 
+                                ? (theme === 'light' ? 'rgba(132, 147, 74, 0.2)' : 'rgba(233, 223, 158, 0.2)') 
+                                : (theme === 'light' ? 'rgba(73, 40, 40, 0.1)' : '#374151')
+                            }}
+                          >
                             {user.role === 'Admin' ? (
-                              <Shield className="w-5 h-5 text-primary-400" />
+                              <Shield className="w-5 h-5" style={{ color: theme === 'light' ? '#84934A' : '#e9df9e' }} />
                             ) : (
-                              <User className="w-5 h-5 text-dark-400" />
+                              <User className="w-5 h-5" style={{ color: theme === 'light' ? '#492828' : '#6b7280' }} />
                             )}
                           </div>
                           <div>
-                            <p className="font-medium text-white">{user.name}</p>
-                            <p className="text-sm text-dark-400">{user.email}</p>
+                            <p className="font-medium" style={{ color: theme === 'light' ? '#492828' : 'white' }}>{user.firstName} {user.lastName}</p>
+                            <p className="text-sm" style={{ color: theme === 'light' ? '#656D3F' : '#6b7280' }}>{user.email}</p>
                           </div>
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${
-                          user.role === 'Admin'
-                            ? 'bg-primary-500/20 text-primary-400'
-                            : 'bg-dark-700 text-dark-300'
-                        }`}>
+                        <span 
+                          className="px-2.5 py-1 rounded-full text-xs font-medium"
+                          style={{
+                            backgroundColor: user.role === 'Admin' 
+                              ? (theme === 'light' ? 'rgba(132, 147, 74, 0.2)' : 'rgba(233, 223, 158, 0.2)')
+                              : (theme === 'light' ? 'rgba(73, 40, 40, 0.1)' : '#374151'),
+                            color: user.role === 'Admin'
+                              ? (theme === 'light' ? '#84934A' : '#e9df9e')
+                              : (theme === 'light' ? '#492828' : '#9ca3af')
+                          }}
+                        >
                           {user.role}
                         </span>
                       </td>
@@ -258,20 +276,22 @@ export default function AdminUsersPage() {
                           )}
                         </button>
                       </td>
-                      <td className="px-6 py-4 text-sm text-dark-400">
+                      <td className="px-6 py-4 text-sm" style={{ color: theme === 'light' ? '#656D3F' : '#6b7280' }}>
                         {format(new Date(user.createdAt), 'MMM d, yyyy')}
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center justify-end gap-2">
                           <button
                             onClick={() => handleOpenEdit(user)}
-                            className="p-2 hover:bg-dark-700 rounded-lg transition-colors text-dark-400 hover:text-white"
+                            className="p-2 rounded-lg transition-colors"
+                            style={{ color: theme === 'light' ? '#656D3F' : '#6b7280' }}
                           >
                             <Edit2 className="w-4 h-4" />
                           </button>
                           <button
                             onClick={() => setShowDeleteConfirm(user.id)}
-                            className="p-2 hover:bg-danger-500/20 rounded-lg transition-colors text-dark-400 hover:text-danger-400"
+                            className="p-2 rounded-lg transition-colors"
+                            style={{ color: theme === 'light' ? '#492828' : '#6b7280' }}
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
@@ -299,8 +319,8 @@ export default function AdminUsersPage() {
                         )}
                       </div>
                       <div>
-                        <p className="font-medium text-white">{user.name}</p>
-                        <p className="text-sm text-dark-400">{user.email}</p>
+                        <p className="font-medium" style={{ color: theme === 'light' ? '#492828' : 'white' }}>{user.firstName} {user.lastName}</p>
+                        <p className="text-sm" style={{ color: theme === 'light' ? '#656D3F' : '#6b7280' }}>{user.email}</p>
                       </div>
                     </div>
                     <div className="flex gap-1">
@@ -389,22 +409,53 @@ export default function AdminUsersPage() {
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-dark-300 mb-2">
-                    Full Name
-                  </label>
-                  <input
-                    type="text"
-                    value={formName}
-                    onChange={(e) => setFormName(e.target.value)}
-                    className="input-field"
-                    placeholder="John Doe"
-                    required
-                  />
+                {!selectedUser && (
+                  <div>
+                    <label className="block text-sm font-medium mb-2" style={{ color: theme === 'light' ? '#492828' : '#9ca3af' }}>
+                      Username
+                    </label>
+                    <input
+                      type="text"
+                      value={formUsername}
+                      onChange={(e) => setFormUsername(e.target.value)}
+                      className="input-field"
+                      placeholder="johndoe"
+                      required
+                    />
+                  </div>
+                )}
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-2" style={{ color: theme === 'light' ? '#492828' : '#9ca3af' }}>
+                      First Name
+                    </label>
+                    <input
+                      type="text"
+                      value={formFirstName}
+                      onChange={(e) => setFormFirstName(e.target.value)}
+                      className="input-field"
+                      placeholder="John"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2" style={{ color: theme === 'light' ? '#492828' : '#9ca3af' }}>
+                      Last Name
+                    </label>
+                    <input
+                      type="text"
+                      value={formLastName}
+                      onChange={(e) => setFormLastName(e.target.value)}
+                      className="input-field"
+                      placeholder="Doe"
+                      required
+                    />
+                  </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-dark-300 mb-2">
+                  <label className="block text-sm font-medium mb-2" style={{ color: theme === 'light' ? '#492828' : '#9ca3af' }}>
                     Email
                   </label>
                   <input
@@ -418,8 +469,8 @@ export default function AdminUsersPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-dark-300 mb-2">
-                    Password {selectedUser && <span className="text-dark-500">(leave empty to keep current)</span>}
+                  <label className="block text-sm font-medium mb-2" style={{ color: theme === 'light' ? '#492828' : '#9ca3af' }}>
+                    Password {selectedUser && <span style={{ color: theme === 'light' ? '#656D3F' : '#6b7280' }}>(leave empty to keep current)</span>}
                   </label>
                   <input
                     type="password"
@@ -455,6 +506,7 @@ export default function AdminUsersPage() {
                       onChange={(e) => setFormCurrency(e.target.value)}
                       className="input-field"
                     >
+                      <option value="Rs">Rs LKR</option>
                       <option value="₹">₹ INR</option>
                       <option value="$">$ USD</option>
                       <option value="€">€ EUR</option>
