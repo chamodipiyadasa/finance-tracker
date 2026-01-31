@@ -11,20 +11,20 @@
       "static/chunks/main-app.js",
       "static/chunks/app/(dashboard)/layout.js"
     ],
-    "/(dashboard)/expenses/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(dashboard)/expenses/page.js"
-    ],
     "/(dashboard)/dashboard/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/(dashboard)/dashboard/page.js"
     ],
-    "/not-found": [
+    "/(dashboard)/budget/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/not-found.js"
+      "static/chunks/app/(dashboard)/budget/page.js"
+    ],
+    "/(dashboard)/savings/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(dashboard)/savings/page.js"
     ]
   }
 }
