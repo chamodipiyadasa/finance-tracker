@@ -2,6 +2,7 @@
 
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { CategorySpending } from '@/types';
+import { useTheme } from '@/contexts/ThemeContext';
 
 interface CategoryDonutProps {
   data: CategorySpending[];
@@ -9,16 +10,26 @@ interface CategoryDonutProps {
 }
 
 export default function CategoryDonut({ data, currency }: CategoryDonutProps) {
+  const { theme } = useTheme();
+  
+  // Theme-aware colors
+  const colors = {
+    title: theme === 'light' ? '#492828' : '#e9df9e',
+    text: theme === 'light' ? '#656D3F' : '#f9cdd5',
+    percentage: theme === 'light' ? '#84934A' : '#e9df9e',
+    border: theme === 'light' ? '#84934A' : 'rgba(233, 223, 158, 0.3)',
+  };
+
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
       const item = payload[0].payload;
       return (
-        <div className="glass-card p-3 border border-dark-600">
-          <p className="text-sm text-dark-300">{item.categoryName}</p>
+        <div className="glass-card p-3" style={{ border: `1px solid ${colors.border}` }}>
+          <p className="text-sm" style={{ color: colors.text }}>{item.categoryName}</p>
           <p className="text-lg font-semibold" style={{ color: item.color }}>
-            {currency}{item.amount.toLocaleString('en-IN')}
+            Rs {item.amount.toLocaleString('en-LK')}
           </p>
-          <p className="text-xs text-dark-400">{item.percentage.toFixed(1)}%</p>
+          <p className="text-xs" style={{ color: colors.percentage }}>{item.percentage.toFixed(1)}%</p>
         </div>
       );
     }
@@ -29,11 +40,11 @@ export default function CategoryDonut({ data, currency }: CategoryDonutProps) {
 
   return (
     <div className="glass-card p-6">
-      <h3 className="text-lg font-semibold text-white mb-4">Category Breakdown</h3>
+      <h3 className="text-lg font-semibold mb-4" style={{ color: colors.title }}>Category Breakdown</h3>
       
       {data.length === 0 ? (
         <div className="h-64 flex items-center justify-center">
-          <p className="text-dark-400">No data available</p>
+          <p style={{ color: colors.text }}>No data available</p>
         </div>
       ) : (
         <>
@@ -61,10 +72,10 @@ export default function CategoryDonut({ data, currency }: CategoryDonutProps) {
             {/* Center text */}
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
               <div className="text-center">
-                <p className="text-2xl font-bold text-white">
-                  {currency}{(total / 1000).toFixed(1)}K
+                <p className="text-2xl font-bold" style={{ color: colors.title }}>
+                  Rs {(total / 1000).toFixed(1)}K
                 </p>
-                <p className="text-xs text-dark-400">Total</p>
+                <p className="text-xs" style={{ color: colors.text }}>Total</p>
               </div>
             </div>
           </div>
@@ -78,9 +89,9 @@ export default function CategoryDonut({ data, currency }: CategoryDonutProps) {
                     className="w-3 h-3 rounded-full"
                     style={{ backgroundColor: item.color }}
                   />
-                  <span className="text-sm text-dark-300">{item.categoryName}</span>
+                  <span className="text-sm" style={{ color: colors.text }}>{item.categoryName}</span>
                 </div>
-                <span className="text-sm font-medium text-white">
+                <span className="text-sm font-medium" style={{ color: colors.percentage }}>
                   {item.percentage.toFixed(1)}%
                 </span>
               </div>
