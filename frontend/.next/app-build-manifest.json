@@ -21,6 +21,16 @@
       "static/chunks/main-app.js",
       "static/chunks/app/(dashboard)/expenses/page.js"
     ],
+    "/(dashboard)/admin/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(dashboard)/admin/page.js"
+    ],
+    "/(dashboard)/admin/users/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(dashboard)/admin/users/page.js"
+    ],
     "/(dashboard)/budget/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
@@ -30,6 +40,11 @@
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/(dashboard)/settings/page.js"
+    ],
+    "/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/page.js"
     ],
     "/login/page": [
       "static/chunks/webpack.js",
