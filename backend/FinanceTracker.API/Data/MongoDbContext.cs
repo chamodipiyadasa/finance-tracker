@@ -24,6 +24,8 @@ public class MongoDbContext
     public IMongoCollection<Expense> Expenses => _database.GetCollection<Expense>("expenses");
     public IMongoCollection<Category> Categories => _database.GetCollection<Category>("categories");
     public IMongoCollection<Budget> Budgets => _database.GetCollection<Budget>("budgets");
+    public IMongoCollection<SavingsGoal> SavingsGoals => _database.GetCollection<SavingsGoal>("savingsGoals");
+    public IMongoCollection<SavingsTransaction> SavingsTransactions => _database.GetCollection<SavingsTransaction>("savingsTransactions");
 
     private void CreateIndexes()
     {
@@ -52,5 +54,15 @@ public class MongoDbContext
         // Category indexes
         var categoryNameIndex = Builders<Category>.IndexKeys.Ascending(c => c.Name);
         Categories.Indexes.CreateOne(new CreateIndexModel<Category>(categoryNameIndex, new CreateIndexOptions { Unique = true }));
+
+        // Savings Goal indexes
+        var savingsGoalUserIndex = Builders<SavingsGoal>.IndexKeys.Ascending(s => s.UserId);
+        SavingsGoals.Indexes.CreateOne(new CreateIndexModel<SavingsGoal>(savingsGoalUserIndex));
+
+        // Savings Transaction indexes
+        var savingsTransGoalIndex = Builders<SavingsTransaction>.IndexKeys.Ascending(t => t.SavingsGoalId);
+        var savingsTransUserIndex = Builders<SavingsTransaction>.IndexKeys.Ascending(t => t.UserId);
+        SavingsTransactions.Indexes.CreateOne(new CreateIndexModel<SavingsTransaction>(savingsTransGoalIndex));
+        SavingsTransactions.Indexes.CreateOne(new CreateIndexModel<SavingsTransaction>(savingsTransUserIndex));
     }
 }

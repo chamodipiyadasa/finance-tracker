@@ -243,6 +243,103 @@ public class UpdateBudgetRequest
 
 #endregion
 
+#region Savings DTOs
+
+public class SavingsGoalDto
+{
+    public string Id { get; set; } = null!;
+    public string Name { get; set; } = null!;
+    public string? Description { get; set; }
+    public decimal TargetAmount { get; set; }
+    public decimal CurrentAmount { get; set; }
+    public decimal RemainingAmount { get; set; }
+    public double PercentageComplete { get; set; }
+    public string Icon { get; set; } = null!;
+    public string Color { get; set; } = null!;
+    public DateTime? TargetDate { get; set; }
+    public bool IsCompleted { get; set; }
+    public DateTime? CompletedAt { get; set; }
+    public DateTime CreatedAt { get; set; }
+}
+
+public class SavingsTransactionDto
+{
+    public string Id { get; set; } = null!;
+    public string SavingsGoalId { get; set; } = null!;
+    public string SavingsGoalName { get; set; } = null!;
+    public decimal Amount { get; set; }
+    public string Type { get; set; } = null!; // "deposit" or "withdraw"
+    public string? Note { get; set; }
+    public DateTime CreatedAt { get; set; }
+}
+
+public class CreateSavingsGoalRequest
+{
+    [Required]
+    [StringLength(100, MinimumLength = 1)]
+    public string Name { get; set; } = null!;
+
+    [StringLength(500)]
+    public string? Description { get; set; }
+
+    [Required]
+    [Range(0.01, double.MaxValue, ErrorMessage = "Target amount must be greater than 0")]
+    public decimal TargetAmount { get; set; }
+
+    [StringLength(50)]
+    public string? Icon { get; set; }
+
+    [StringLength(20)]
+    public string? Color { get; set; }
+
+    public DateTime? TargetDate { get; set; }
+}
+
+public class UpdateSavingsGoalRequest
+{
+    [StringLength(100, MinimumLength = 1)]
+    public string? Name { get; set; }
+
+    [StringLength(500)]
+    public string? Description { get; set; }
+
+    [Range(0.01, double.MaxValue, ErrorMessage = "Target amount must be greater than 0")]
+    public decimal? TargetAmount { get; set; }
+
+    [StringLength(50)]
+    public string? Icon { get; set; }
+
+    [StringLength(20)]
+    public string? Color { get; set; }
+
+    public DateTime? TargetDate { get; set; }
+}
+
+public class AddSavingsTransactionRequest
+{
+    [Required]
+    [Range(0.01, double.MaxValue, ErrorMessage = "Amount must be greater than 0")]
+    public decimal Amount { get; set; }
+
+    [Required]
+    [RegularExpression("^(deposit|withdraw)$", ErrorMessage = "Type must be 'deposit' or 'withdraw'")]
+    public string Type { get; set; } = "deposit";
+
+    [StringLength(500)]
+    public string? Note { get; set; }
+}
+
+public class SavingsSummaryDto
+{
+    public decimal TotalSaved { get; set; }
+    public decimal TotalTarget { get; set; }
+    public int ActiveGoals { get; set; }
+    public int CompletedGoals { get; set; }
+    public double OverallProgress { get; set; }
+}
+
+#endregion
+
 #region Dashboard DTOs
 
 public class DashboardSummary
