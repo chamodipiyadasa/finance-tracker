@@ -26,7 +26,7 @@ public static class DataSeeder
             {
                 Name = "Food",
                 Icon = "utensils",
-                Color = "#FF6B6B",
+                Color = "#e9df9e",
                 Description = "Food and dining expenses",
                 IsDefault = true
             },
@@ -34,7 +34,7 @@ public static class DataSeeder
             {
                 Name = "Transport",
                 Icon = "car",
-                Color = "#4ECDC4",
+                Color = "#7a8450",
                 Description = "Transportation and travel expenses",
                 IsDefault = true
             },
@@ -42,7 +42,7 @@ public static class DataSeeder
             {
                 Name = "Bills",
                 Icon = "file-text",
-                Color = "#45B7D1",
+                Color = "#f9cdd5",
                 Description = "Utility bills and subscriptions",
                 IsDefault = true
             },
@@ -50,7 +50,7 @@ public static class DataSeeder
             {
                 Name = "Shopping",
                 Icon = "shopping-bag",
-                Color = "#96CEB4",
+                Color = "#ed7a93",
                 Description = "Shopping and retail purchases",
                 IsDefault = true
             },
@@ -58,7 +58,7 @@ public static class DataSeeder
             {
                 Name = "Investment",
                 Icon = "trending-up",
-                Color = "#FFEAA7",
+                Color = "#9caa6f",
                 Description = "Investments and savings",
                 IsDefault = true
             },
@@ -66,7 +66,7 @@ public static class DataSeeder
             {
                 Name = "Entertainment",
                 Icon = "film",
-                Color = "#DDA0DD",
+                Color = "#ddd18a",
                 Description = "Entertainment and leisure activities",
                 IsDefault = true
             },
@@ -74,7 +74,7 @@ public static class DataSeeder
             {
                 Name = "Healthcare",
                 Icon = "heart",
-                Color = "#FF9FF3",
+                Color = "#f5a8b8",
                 Description = "Medical and healthcare expenses",
                 IsDefault = true
             },
@@ -82,7 +82,7 @@ public static class DataSeeder
             {
                 Name = "Education",
                 Icon = "book",
-                Color = "#54A0FF",
+                Color = "#b9c596",
                 Description = "Education and learning expenses",
                 IsDefault = true
             },
@@ -90,7 +90,7 @@ public static class DataSeeder
             {
                 Name = "Others",
                 Icon = "more-horizontal",
-                Color = "#A0A0A0",
+                Color = "#cfc070",
                 Description = "Other miscellaneous expenses",
                 IsDefault = true
             }
@@ -115,7 +115,7 @@ public static class DataSeeder
                 LastName = "Administrator",
                 Role = "Admin",
                 IsActive = true,
-                Currency = "₹"
+                Currency = "Rs"
             },
             new User
             {
@@ -126,7 +126,7 @@ public static class DataSeeder
                 LastName = "Doe",
                 Role = "User",
                 IsActive = true,
-                Currency = "₹"
+                Currency = "Rs"
             },
             new User
             {
@@ -137,7 +137,7 @@ public static class DataSeeder
                 LastName = "Doe",
                 Role = "User",
                 IsActive = true,
-                Currency = "₹"
+                Currency = "Rs"
             }
         };
 
