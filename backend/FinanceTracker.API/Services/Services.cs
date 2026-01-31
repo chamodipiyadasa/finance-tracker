@@ -631,11 +631,27 @@ public class DashboardService : IDashboardService
             ? Math.Round((double)((totalThisMonth - totalLastMonth) / totalLastMonth) * 100, 2) 
             : 0;
 
-        // Daily average
+        // Daily average - use the number of days elapsed in the requested month
         var daysInMonth = DateTime.DaysInMonth(year, month);
-        var currentDay = month == DateTime.UtcNow.Month && year == DateTime.UtcNow.Year 
-            ? DateTime.UtcNow.Day 
-            : daysInMonth;
+        var today = DateTime.UtcNow;
+        int currentDay;
+        
+        // If requested month is the current month (considering both UTC and a reasonable timezone offset)
+        if (year == today.Year && month == today.Month)
+        {
+            currentDay = today.Day;
+        }
+        // If requested month is in the future, use 1 to avoid division issues
+        else if (year > today.Year || (year == today.Year && month > today.Month))
+        {
+            currentDay = 1;
+        }
+        // If requested month is in the past, use total days in that month
+        else
+        {
+            currentDay = daysInMonth;
+        }
+        
         var averagePerDay = currentDay > 0 ? Math.Round(totalThisMonth / currentDay, 2) : 0;
 
         // Category spending
