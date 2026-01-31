@@ -822,4 +822,213 @@ public class DashboardService : IDashboardService
     }
 }
 
+public class SavingsService : ISavingsService
+{
+    private readonly ISavingsGoalRepository _goalRepository;
+    private readonly ISavingsTransactionRepository _transactionRepository;
+
+    public SavingsService(ISavingsGoalRepository goalRepository, ISavingsTransactionRepository transactionRepository)
+    {
+        _goalRepository = goalRepository;
+        _transactionRepository = transactionRepository;
+    }
+
+    public async Task<SavingsGoalDto?> GetGoalByIdAsync(string id, string userId)
+    {
+        var goal = await _goalRepository.GetByIdAsync(id);
+        if (goal == null || goal.UserId != userId) return null;
+        return MapToDto(goal);
+    }
+
+    public async Task<List<SavingsGoalDto>> GetGoalsByUserIdAsync(string userId)
+    {
+        var goals = await _goalRepository.GetByUserIdAsync(userId);
+        return goals.Select(MapToDto).ToList();
+    }
+
+    public async Task<SavingsGoalDto> CreateGoalAsync(string userId, CreateSavingsGoalRequest request)
+    {
+        var goal = new SavingsGoal
+        {
+            UserId = userId,
+            Name = request.Name,
+            Description = request.Description,
+            TargetAmount = request.TargetAmount,
+            Icon = request.Icon ?? "piggy-bank",
+            Color = request.Color ?? "#84934A",
+            TargetDate = request.TargetDate
+        };
+
+        var created = await _goalRepository.CreateAsync(goal);
+        return MapToDto(created);
+    }
+
+    public async Task<SavingsGoalDto?> UpdateGoalAsync(string id, string userId, UpdateSavingsGoalRequest request)
+    {
+        var goal = await _goalRepository.GetByIdAsync(id);
+        if (goal == null || goal.UserId != userId) return null;
+
+        if (request.Name != null) goal.Name = request.Name;
+        if (request.Description != null) goal.Description = request.Description;
+        if (request.TargetAmount.HasValue) goal.TargetAmount = request.TargetAmount.Value;
+        if (request.Icon != null) goal.Icon = request.Icon;
+        if (request.Color != null) goal.Color = request.Color;
+        if (request.TargetDate.HasValue) goal.TargetDate = request.TargetDate;
+
+        // Check if goal is now completed
+        if (goal.CurrentAmount >= goal.TargetAmount && !goal.IsCompleted)
+        {
+            goal.IsCompleted = true;
+            goal.CompletedAt = DateTime.UtcNow;
+        }
+
+        var updated = await _goalRepository.UpdateAsync(id, goal);
+        return updated != null ? MapToDto(updated) : null;
+    }
+
+    public async Task<bool> DeleteGoalAsync(string id, string userId)
+    {
+        var goal = await _goalRepository.GetByIdAsync(id);
+        if (goal == null || goal.UserId != userId) return false;
+        return await _goalRepository.DeleteAsync(id);
+    }
+
+    public async Task<SavingsTransactionDto?> AddTransactionAsync(string goalId, string userId, AddSavingsTransactionRequest request)
+    {
+        var goal = await _goalRepository.GetByIdAsync(goalId);
+        if (goal == null || goal.UserId != userId) return null;
+
+        // For withdrawals, check if there's enough balance
+        if (request.Type == "withdraw" && goal.CurrentAmount < request.Amount)
+        {
+            return null;
+        }
+
+        var transaction = new SavingsTransaction
+        {
+            SavingsGoalId = goalId,
+            UserId = userId,
+            Amount = request.Amount,
+            Type = request.Type,
+            Note = request.Note
+        };
+
+        var created = await _transactionRepository.CreateAsync(transaction);
+
+        // Update goal's current amount
+        if (request.Type == "deposit")
+        {
+            goal.CurrentAmount += request.Amount;
+        }
+        else
+        {
+            goal.CurrentAmount -= request.Amount;
+        }
+
+        // Check if goal is completed
+        if (goal.CurrentAmount >= goal.TargetAmount && !goal.IsCompleted)
+        {
+            goal.IsCompleted = true;
+            goal.CompletedAt = DateTime.UtcNow;
+        }
+        else if (goal.CurrentAmount < goal.TargetAmount && goal.IsCompleted)
+        {
+            goal.IsCompleted = false;
+            goal.CompletedAt = null;
+        }
+
+        await _goalRepository.UpdateAsync(goalId, goal);
+
+        return new SavingsTransactionDto
+        {
+            Id = created.Id,
+            SavingsGoalId = goalId,
+            SavingsGoalName = goal.Name,
+            Amount = created.Amount,
+            Type = created.Type,
+            Note = created.Note,
+            CreatedAt = created.CreatedAt
+        };
+    }
+
+    public async Task<List<SavingsTransactionDto>> GetTransactionsByGoalIdAsync(string goalId, string userId)
+    {
+        var goal = await _goalRepository.GetByIdAsync(goalId);
+        if (goal == null || goal.UserId != userId) return new List<SavingsTransactionDto>();
+
+        var transactions = await _transactionRepository.GetByGoalIdAsync(goalId);
+        return transactions.Select(t => new SavingsTransactionDto
+        {
+            Id = t.Id,
+            SavingsGoalId = t.SavingsGoalId,
+            SavingsGoalName = goal.Name,
+            Amount = t.Amount,
+            Type = t.Type,
+            Note = t.Note,
+            CreatedAt = t.CreatedAt
+        }).ToList();
+    }
+
+    public async Task<List<SavingsTransactionDto>> GetRecentTransactionsAsync(string userId, int limit = 20)
+    {
+        var transactions = await _transactionRepository.GetByUserIdAsync(userId, limit);
+        var goals = await _goalRepository.GetByUserIdAsync(userId);
+        var goalDict = goals.ToDictionary(g => g.Id, g => g.Name);
+
+        return transactions.Select(t => new SavingsTransactionDto
+        {
+            Id = t.Id,
+            SavingsGoalId = t.SavingsGoalId,
+            SavingsGoalName = goalDict.GetValueOrDefault(t.SavingsGoalId, "Unknown"),
+            Amount = t.Amount,
+            Type = t.Type,
+            Note = t.Note,
+            CreatedAt = t.CreatedAt
+        }).ToList();
+    }
+
+    public async Task<SavingsSummaryDto> GetSummaryAsync(string userId)
+    {
+        var goals = await _goalRepository.GetByUserIdAsync(userId);
+        
+        var totalSaved = goals.Sum(g => g.CurrentAmount);
+        var totalTarget = goals.Where(g => !g.IsCompleted).Sum(g => g.TargetAmount);
+        var activeGoals = goals.Count(g => !g.IsCompleted);
+        var completedGoals = goals.Count(g => g.IsCompleted);
+        var overallProgress = totalTarget > 0 ? (double)(totalSaved / totalTarget) * 100 : 0;
+
+        return new SavingsSummaryDto
+        {
+            TotalSaved = totalSaved,
+            TotalTarget = totalTarget,
+            ActiveGoals = activeGoals,
+            CompletedGoals = completedGoals,
+            OverallProgress = Math.Min(overallProgress, 100)
+        };
+    }
+
+    private static SavingsGoalDto MapToDto(SavingsGoal goal)
+    {
+        var remaining = Math.Max(0, goal.TargetAmount - goal.CurrentAmount);
+        var percentage = goal.TargetAmount > 0 ? (double)(goal.CurrentAmount / goal.TargetAmount) * 100 : 0;
+
+        return new SavingsGoalDto
+        {
+            Id = goal.Id,
+            Name = goal.Name,
+            Description = goal.Description,
+            TargetAmount = goal.TargetAmount,
+            CurrentAmount = goal.CurrentAmount,
+            RemainingAmount = remaining,
+            PercentageComplete = Math.Min(percentage, 100),
+            Icon = goal.Icon,
+            Color = goal.Color,
+            TargetDate = goal.TargetDate,
+            IsCompleted = goal.IsCompleted,
+            CompletedAt = goal.CompletedAt,
+            CreatedAt = goal.CreatedAt
+        };
+    }
+}
+
 #endregion
