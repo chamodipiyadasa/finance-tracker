@@ -155,6 +155,49 @@ The app follows a **luxury trading-app aesthetic**:
 - Motivational messaging for budget tracking
 - Mobile-first responsive design
 
+## 🌐 Deployment
+
+### Frontend (Vercel)
+
+1. Push your code to GitHub
+2. Go to [Vercel](https://vercel.com) and import your repository
+3. Set root directory to `frontend`
+4. Add environment variable:
+   - `NEXT_PUBLIC_API_URL` = Your deployed backend URL (e.g., `https://your-api.azurewebsites.net`)
+5. Deploy!
+
+### Backend (.NET 8)
+
+Since Vercel doesn't support .NET, deploy your backend to one of these platforms:
+
+**Option 1: Azure App Service (Recommended)**
+```bash
+# Install Azure CLI, then:
+az webapp up --name your-api-name --resource-group your-rg --runtime "DOTNET|8.0"
+```
+
+**Option 2: Railway**
+1. Create a new project on [Railway](https://railway.app)
+2. Connect your GitHub repo
+3. Set root directory to `backend/FinanceTracker.API`
+4. Add environment variables for MongoDB and JWT
+
+**Option 3: Render**
+1. Create a new Web Service on [Render](https://render.com)
+2. Connect your repo, set root to `backend/FinanceTracker.API`
+3. Build command: `dotnet publish -c Release -o out`
+4. Start command: `dotnet out/FinanceTracker.API.dll`
+
+### Environment Variables (Backend)
+
+| Variable | Description |
+|----------|-------------|
+| `MongoDB__ConnectionString` | MongoDB Atlas connection string |
+| `MongoDB__DatabaseName` | Database name (e.g., `financetracker`) |
+| `Jwt__Secret` | JWT signing key (min 32 chars) |
+| `Jwt__Issuer` | API issuer URL |
+| `Jwt__Audience` | Frontend URL |
+
 ## License
 
 MIT

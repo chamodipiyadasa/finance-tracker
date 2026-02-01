@@ -27,7 +27,6 @@ export default function BudgetProgress({ budget, currency }: BudgetProgressProps
   const formatCurrency = (amount: number) => {
     return 'Rs ' + new Intl.NumberFormat('en-LK', {
       maximumFractionDigits: 0,
-      maximumFractionDigits: 0,
     }).format(amount);
   };
 
