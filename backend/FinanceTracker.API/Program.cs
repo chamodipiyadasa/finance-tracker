@@ -5,6 +5,7 @@ using FinanceTracker.API.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Microsoft.AspNetCore.Builder; // Required for app.UseCors
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -103,8 +104,11 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
+        // Allow both local and production frontend URLs
         policy.WithOrigins(
-            builder.Configuration["FrontendUrl"] ?? "http://localhost:3000"
+            builder.Configuration["FrontendUrl"] ?? "http://localhost:3000",
+            "http://localhost:3000",
+            "https://piggybank-chamodipiyadasas-projects.vercel.app/" 
         )
         .AllowAnyHeader()
         .AllowAnyMethod()
@@ -131,8 +135,12 @@ if (app.Environment.IsDevelopment())
     });
 }
 
+
 app.UseHttpsRedirection();
+
+// CORS must be placed between UseHttpsRedirection and UseAuthentication
 app.UseCors("AllowFrontend");
+
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
