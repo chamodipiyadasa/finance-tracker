@@ -106,10 +106,11 @@ builder.Services.AddCors(options =>
     {
         // Allow both local and production frontend URLs
         policy.WithOrigins(
-            builder.Configuration["FrontendUrl"] ?? "http://localhost:3000",
-            "http://localhost:3000",
-            "https://piggybank-chamodipiyadasas-projects.vercel.app/" 
-        )
+    builder.Configuration["FrontendUrl"] ?? "http://localhost:3000",
+    "http://localhost:3000",
+    "https://piggybank-chamodipiyadasas-projects.vercel.app",
+    "https://piggybank-nflflwt4i-chamodipiyadasas-projects.vercel.app" // <-- Add this line
+)
         .AllowAnyHeader()
         .AllowAnyMethod()
         .AllowCredentials();
