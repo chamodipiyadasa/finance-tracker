@@ -43,11 +43,12 @@ class ApiService {
   ): Promise<ApiResponse<T>> {
     const token = this.getToken();
     
-    const headers: HeadersInit = {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    };
 
+    // Use Record<string, string> for safe property assignment
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      ...(options.headers as Record<string, string>),
+    };
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
     }
